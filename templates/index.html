@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Fragen</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+
+    
+<div class="container">
+    <h1>Fragen und Antworten</h1>
+    <hr>
+    <div class="row">
+        <div class="col">
+            <label for="frage" class= "font-weight-bold">Frage:</label>
+            <div class="card">
+                <div class="card-body">
+                    {% if frage %}
+                        {{ frage["frage"] }}
+                    {% endif %}
+                </div>
+              </div>
+              <br>
+            <form action='/' method='POST'>
+
+                    <label for="antwort" class= "font-weight-bold" >Antwort:</label>
+                    <textarea class="form-control" name='antwort' id='antwort' rows="5" type="text" placeholder="Antwort"></textarea>
+                    <br>
+                    <input type='submit' class="btn btn-primary float-right" value='Senden'>
+            </form>
+        </div>
+
+        <div class="col">
+            <br>
+            {% if correction %}
+            {% if correction["success"] %}
+            <p><i class="far fa-comment-dots"></i> Richtig! <i class="far fa-grin-squint"></i></p>
+            {% else %}
+            {% for correction in correction["errors"] %}
+            <p> <i class="far fa-comment-dots"></i></i> {{ correction['match'] }}.</p>
+            <p> <i class="fas fa-comment-medical"></i> {{ correction['tip'] }}.</p>
+            {% endfor %}
+            {% endif %}
+            {% endif %}
+
+            <img src="static/images/robot.png" style="width:250px;height:300px;" alt="Robot">
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
