@@ -12,7 +12,7 @@ def index():
     response = requests.get(url)
     frage = json.loads(response.content)
 
-    session['num_frage'] = frage["num_frage"]
+    session['frage'] = frage
 
     return render_template("index.html", frage=frage)
 
@@ -46,11 +46,13 @@ def submit():
 
     correction = json.loads(response.content)
 
-    response = requests.get(url)
-    frage = json.loads(response.content)
 
-    session['num_frage'] = frage["num_frage"]
-
+    if correction['success']:
+        frage = {'num_frage': correction['bot_antwort']['context'],
+                    'frage': correction['bot_antwort']['result']}
+        session['frage'] = frage
+    else:
+        frage = session['frage']
     return render_template('index.html', correction=correction, frage=frage)
 
 @app.route('/processjson', methods=['POST'])
