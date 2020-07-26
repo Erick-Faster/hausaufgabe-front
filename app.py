@@ -12,6 +12,8 @@ def index():
     response = requests.get(url)
     frage = json.loads(response.content)
 
+    print(frage)
+
     session['frage'] = frage
 
     return render_template("index.html", frage=frage)
@@ -37,8 +39,10 @@ def theform():
 def submit():
 
     data = {
-        'num_frage': session['num_frage'],
+        'num_frage': session['frage']['num_frage'],
         'antwort': request.form['antwort']}
+
+    print(f'data={data}')
 
     url = "http://127.0.0.1:5050/frage"
 
