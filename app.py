@@ -1,5 +1,7 @@
 from flask import Flask, jsonify, request, url_for, redirect, session, render_template
 import requests, json
+import datetime
+
 app =  Flask(__name__)
 
 app.config['DEBUG'] = True
@@ -12,64 +14,65 @@ def index():
     response = requests.get(url)
     frage = json.loads(response.content)
 
+    message = frage['frage']
+    pattern = frage['num_frage']
+
     print(frage)
 
-    session['frage'] = frage
+    session['chat'] = []
 
-    return render_template("index.html", frage=frage)
+    date = datetime.datetime.now()
+    date = date.strftime("%c")
 
-@app.route('/home', methods=['POST', 'GET'], defaults={'name': 'Default'})
-@app.route('/home/<string:name>', methods=['POST', 'GET'])
-def home(name):
-    session['name'] = name
-    return render_template('home.html', name=name, display=False, mylist=['one', 'two', 'three', 'four'], listofdictionaries = [{'name': 'Erick'}, {'name':'Mateus'}])
+    session['current_frage'] = frage
 
-#http://127.0.0.1:5050/query?name=sara&location=morroco
-@app.route('/query')
-def query():
-    name = request.args.get('name')
-    location = request.args.get('location')
-    return '<h1>Hi {}. You are from {}. You are on the query page!</h1>'.format(name, location)
+    chat = {"date": date, "sender": "robot", "message": message}
+    session['chat'].append(chat)
 
-@app.route('/theform')
-def theform():
-    return render_template('form.html')
+    return render_template("test.html", chat=session['chat'])
+
+    #return render_template("index.html", frage=frage)
 
 @app.route('/', methods=['POST'])
 def submit():
 
     data = {
-        'num_frage': session['frage']['num_frage'],
+        'num_frage': session['current_frage']['num_frage'],
         'antwort': request.form['antwort']}
+
+    date = datetime.datetime.now()
+    chat = {"date": date, "sender": "user", "message": data['antwort']}
+    session['chat'].append(chat)
 
     print(f'data={data}')
 
     url = "http://127.0.0.1:5050/frage"
 
     response = requests.post(url, json=data)
+    response = json.loads(response.content)
 
-    correction = json.loads(response.content)
+    date = datetime.datetime.now()
+    if response['success']:
+        
+        message = response['bot_antwort']['result']
+        pattern = response['bot_antwort']['context']
+        chat = {"date": date, "sender": "robot", "message": message}
+        session['chat'].append(chat)
 
-
-    if correction['success']:
-        frage = {'num_frage': correction['bot_antwort']['context'],
-                    'frage': correction['bot_antwort']['result']}
-        session['frage'] = frage
+        frage = {'num_frage': pattern, 'frage': message}
+        session['current_frage'] = frage
     else:
-        frage = session['frage']
-    return render_template('index.html', correction=correction, frage=frage)
+        for error in response['errors']:
+            message = f"{error['match']}\n{error['tip']}"
+            chat = {"date": date, "sender": "gerbot", "message": message}
+            session['chat'].append(chat)
+            print(f"Found error: {message}") 
+        frage = session['current_frage']
 
-@app.route('/processjson', methods=['POST'])
-def processjson():
 
-    data = request.get_json()
+    return render_template("test.html", chat=session['chat'])
 
-    name = data['name']
-    location = data['location']
-
-    randomlist = data['randomlist']
-
-    return jsonify({'result': 'Success', 'name':name, 'location':location, 'randomkeyinlist':randomlist[1] })
+    #return render_template('index.html', response=response, frage=frage)
 
 if __name__ == '__main__':
     app.run(port=5070)
