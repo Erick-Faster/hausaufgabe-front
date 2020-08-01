@@ -22,7 +22,7 @@ def index():
     session['chat'] = []
 
     date = datetime.datetime.now()
-    date = date.strftime("%c")
+    date = date.strftime("%X")
 
     session['current_frage'] = frage
 
@@ -41,6 +41,7 @@ def submit():
         'antwort': request.form['antwort']}
 
     date = datetime.datetime.now()
+    date = date.strftime("%X")
     chat = {"date": date, "sender": "user", "message": data['antwort']}
     session['chat'].append(chat)
 
@@ -51,9 +52,7 @@ def submit():
     response = requests.post(url, json=data)
     response = json.loads(response.content)
 
-    date = datetime.datetime.now()
     if response['success']:
-        
         message = response['bot_antwort']['result']
         pattern = response['bot_antwort']['context']
         chat = {"date": date, "sender": "robot", "message": message}
